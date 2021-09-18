@@ -9,7 +9,7 @@ for tgt_lang in ${TGT_LANG[@]}; do
     echo $tgt_lang
 
     # teacher training
-    python3 main_single.py --do_train --gpu_ids ${GPU_IDS} --seed ${seed} --learning_rate 5e-5 --data_dir ./data/conll/${SRC_LANG} --output_dir align-model-${seed}/mono-src-${SRC_LANG} --overwrite_cache
+    python3 main.py --do_train --gpu_ids ${GPU_IDS} --seed ${seed} --learning_rate 5e-5 --data_dir ./data/conll/${SRC_LANG} --output_dir align-model-${seed}/mono-src-${SRC_LANG} --overwrite_cache
 
     # train
     python3 main.py --do_train --do_KD --gpu_ids ${GPU_IDS} --seed ${seed} --data_dir ./data/aligned/${tgt_lang} --src_langs ${SRC_LANG} --src_model_dir_prefix mono-src- --src_model_dir align-model-${seed} --output_dir joint-${seed}/ts-${SRC_LANG}-${tgt_lang}/ --overwrite_cache--joint_train

@@ -1,7 +1,7 @@
 # CL-NERIL
 Cross-Lingual Model for NER in Indian Languages
 
-Supplemental analaysis file is provided: Supplementary.pdf.
+Supplemental analysis file is provided: Supplementary.pdf.
 
 Sample data files for 3 Indian languages are in /source/data/aligned. Full data (weakly labeled and gold standard) will be made public in future.
 
