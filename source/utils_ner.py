@@ -53,7 +53,6 @@ class InputFeatures(object):
 
 def read_examples_from_file(data_dir, mode):
     file_path = os.path.join(data_dir, "{}.txt".format(mode))
-    # file_path = os.path.join(data_dir, "{}.part.txt".format(mode)) # for debug
     guid_index = 1
     examples = []
     with open(file_path, encoding="utf-8") as f:

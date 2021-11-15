@@ -31,15 +31,7 @@ class BertForTokenClassification_(BertForTokenClassification):
         loss, scores = outputs[:2]
 
     """
-    # def __init__(self, config):
-    #     super(BertForTokenClassification, self).__init__(config)
-    #     self.num_labels = config.num_labels
-    #
-    #     self.bert = BertModel(config)
-    #     self.dropout = nn.Dropout(config.hidden_dropout_prob)
-    #     self.classifier = nn.Linear(config.hidden_size, config.num_labels)
-    #
-    #     self.init_weights()
+
     def __init__(self, config):
         super().__init__(config)
         self.conv_layer = Conv1d(768, 768, 3, padding=1)
@@ -80,30 +72,6 @@ class BertForTokenClassification_(BertForTokenClassification):
             outputs = (loss,) + outputs
 
         if src_probs is not None:
-            # ## KL Divergence
-            # loss_KD_fct = KLDivLoss(reduction="mean")
-            # log_probs = torch.nn.functional.log_softmax(logits, dim=-1)
-            # if attention_mask is not None:
-            #     active_loss = attention_mask.view(-1) == 1
-            #     active_log_probs = log_probs.view(-1, self.num_labels)[active_loss]
-            #     active_src_probs = src_probs.view(-1, self.num_labels)[active_loss]
-            #
-            #     loss_KD = loss_KD_fct(active_log_probs, active_src_probs)
-            # else:
-            #     loss_KD = loss_KD_fct(log_probs, src_probs)
-
-            # ## CrossEntropy
-            # loss_KD_fct = CrossEntropyLoss()
-            # src_labels = torch.argmax(src_probs.view(-1, self.num_labels), dim=-1)
-            # if attention_mask is not None:
-            #     active_loss = attention_mask.view(-1) == 1
-            #     active_logits = logits.view(-1, self.num_labels)[active_loss]
-            #     active_src_labels = src_labels[active_loss]
-            #
-            #     loss_KD = loss_KD_fct(active_logits, active_src_labels)
-            # else:
-            #     loss_KD = loss_KD_fct(logits.view(-1, self.num_labels), src_labels)
-
             ## L2 Norm
             loss_KD_fct = MSELoss(reduction="mean")
             probs = torch.nn.functional.softmax(logits, dim=-1)

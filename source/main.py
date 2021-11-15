@@ -233,7 +233,6 @@ def train_KD(args, model, train_dataset, src_probs, tokenizer, labels, pad_token
          "weight_decay": 0.0}
     ]
     optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
-    # scheduler = WarmupLinearSchedule(optimizer, warmup_steps=args.warmup_steps, t_total=t_total)
     scheduler = WarmupLinearSchedule(optimizer, warmup_steps=int(t_total*args.warmup_ratio), t_total=t_total)
     if args.fp16:
         try:
@@ -272,7 +271,6 @@ def train_KD(args, model, train_dataset, src_probs, tokenizer, labels, pad_token
     for epoch_i in range(args.num_train_epochs):
         for step, batch in enumerate(train_dataloader):
             model.train()
-            # batch = tuple(t.to(args.device) for t in batch)
             inputs = {"input_ids": batch[0].to(args.device),
                       "attention_mask": batch[1].to(args.device),
                       "token_type_ids": batch[2].to(args.device) if args.model_type in ["bert", "xlnet"] else None,
@@ -282,6 +280,7 @@ def train_KD(args, model, train_dataset, src_probs, tokenizer, labels, pad_token
             outputs = model(**inputs, use_conv=args.use_conv)
             # loss = outputs[0]  # model outputs are always tuple in pytorch-transformers (see doc)
             loss_KD, loss = outputs[:2]
+            
             # for joint learning only
             if args.joint_train:
                 loss_KD = loss_KD + loss
@@ -293,8 +292,6 @@ def train_KD(args, model, train_dataset, src_probs, tokenizer, labels, pad_token
                 loss_KD = loss_KD / args.gradient_accumulation_steps
 
             if args.fp16:
-                # with amp.scale_loss(loss, optimizer) as scaled_loss:
-                #     scaled_loss.backward()
                 with amp.scale_loss(loss_KD, optimizer) as scaled_loss:
                     scaled_loss.backward()
             else:
@@ -358,10 +355,6 @@ def train_KD(args, model, train_dataset, src_probs, tokenizer, labels, pad_token
 
 def evaluate(args, model, tokenizer, labels, pad_token_label_id, mode, prefix=""):
     eval_dataset = load_and_cache_examples(args, tokenizer, labels, pad_token_label_id, mode=mode)
-
-    # for n, p in model.named_parameters():
-    #     if n =="conv.weight" or n=="conv.bias":
-    #         print(p)
 
     args.eval_batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)
     # Note that DistributedSampler samples randomly
@@ -496,8 +489,6 @@ def get_src_probs(args, dataset, model_class, src_lang):
     logger.info("***** Compute logits for [%s] dataset using the model [%s] *****", os.path.basename(args.data_dir), src_model_path)
     logger.info("  Num examples = %d", len(dataset))
     logger.info("  Batch size = %d", args.eval_batch_size)
-    # eval_loss = 0.0
-    # nb_eval_steps = 0
     preds = None
     src_model.eval()
     for batch in eval_dataloader:
@@ -511,17 +502,12 @@ def get_src_probs(args, dataset, model_class, src_lang):
                       "labels": None} #batch[3]}
             outputs = src_model(**inputs)
             logits = outputs[0]
-            # tmp_eval_loss, logits = outputs[:2]
-            # eval_loss += tmp_eval_loss.item()
-            # print(f'logits shape : {logits.shape}')
 
-        # nb_eval_steps += 1
         preds = logits.detach() if preds is None else torch.cat((preds, logits.detach()), dim=0) # dataset_len x max_seq_len x label_len
 
-    # eval_loss = eval_loss / nb_eval_steps
     preds = torch.nn.functional.softmax(preds, dim=-1)
 
-    return preds #, eval_loss
+    return preds
 
 
 def main():
@@ -654,12 +640,6 @@ def main():
 
     # Setup CUDA, GPU & distributed training
     if args.local_rank == -1 or args.no_cuda:
-        #args.n_gpu = len(args.gpu_ids)  # torch.cuda.device_count()
-        #args.n_gpu = 1
-        #os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_ids[0])
-        # os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3,4,5,6"
-        #device = torch.device("cpu")
-        #device = torch.device("cpu")
         args.n_gpu = 0 if args.no_cuda else 1
         device = torch.device("cpu") if (args.n_gpu == 0 or args.no_cuda) else torch.device("cuda:{}".format(args.gpu_ids[0]))
     else:  # Initializes the distributed backend which will take care of sychronizing nodes/GPUs
