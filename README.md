@@ -1,4 +1,5 @@
 # CL-NERIL: A Cross-Lingual Model for NER in Indian Languages
+Code for the paper - https://arxiv.org/abs/2111.11815
 
 ## Setup
 1. Setup a virtual environment
@@ -16,6 +17,18 @@ $ ./scripts/run_clneril.sh
 ```
 The results and logs will be stored in the output directory specified.
 
+## Citation
+If you find this repo helpful, please cite the following:
+```
+@misc{prabhakar2021clneril,
+      title={CL-NERIL: A Cross-Lingual Model for NER in Indian Languages}, 
+      author={Akshara Prabhakar and Gouri Sankar Majumder and Ashish Anand},
+      year={2021},
+      eprint={2111.11815},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL}
+}
+```
 
 ## Credits
 The code framework is adapted from [Teacher-Student](https://github.com/microsoft/vert-papers/tree/master/papers/SingleMulti-TS).
